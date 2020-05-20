@@ -4,7 +4,7 @@
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
-
+%JULIAN
 sat([],I,I):-     write('SAT!!'),nl,!.
 sat(CNF,I,M):-
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
@@ -43,6 +43,7 @@ sat(CNF,I,M):-
 
 
 %%%%%%%%%%%%%%%%%%%
+%AITOR
 % unCert(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
@@ -71,7 +72,7 @@ codifica(N,K,Arestes,Inici,C):-
    crear la CNF que fa que cada node tingui un color
    crear la CNF que força els colors dels nodes segons Inici
    crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
-   C sera el resultat d'ajuntar les CNF creades
+   C sera el resultat dajuntar les CNF creades
 
     
                                  
