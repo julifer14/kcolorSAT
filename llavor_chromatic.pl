@@ -1,4 +1,5 @@
-
+%Aitor Mallol
+%Julian Fernandez
 %%%%%%%%%%%%
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
