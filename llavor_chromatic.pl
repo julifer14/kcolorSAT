@@ -5,7 +5,7 @@
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
 %JULIAN
-sat([],I,I):-     write('SAT!!'),nl,!.
+sat([],I,I):-     write('SAT!!'),nl,!. 
 sat(CNF,I,M):-
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
