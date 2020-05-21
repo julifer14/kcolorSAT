@@ -22,8 +22,15 @@ sat(CNF,I,M):-
 % Donat una CNF,
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
-%  - un qualsevol o el seu negat.
-% ...
+%  - un qualsevol o el seu negat. (De l'ultima clausula)
+tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, write('Unitari\n'), Lit = X.
+tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, write('Intent\n'), tria(Xs,Lit),!.
+tria([X|Xs],Lit) :- extreure(X,Lit).
+
+%extreure(F,Lit)
+%Extreu un literal d'una llista.
+extreure([],_) :- write('No es pot treure del buit!'),n1,!.
+extreure([X|Xs],L) :- L=X.
 
 %%%%%%%%%%%%%%%%%%%%%
 % simlipf(Lit, F, FS)
@@ -67,12 +74,12 @@ sat(CNF,I,M):-
 % Arestes es la llista d'arestes del graph com a parelles de nodes
 % Inici es la llista de parelles (node,num_color) que s'han de forçar
 % C sera la CNF que codifica graph coloring problem pel graph donat
-codifica(N,K,Arestes,Inici,C):-
-   crear la llista de llistes de variables pels colors de cada node
-   crear la CNF que fa que cada node tingui un color
-   crear la CNF que força els colors dels nodes segons Inici
-   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
-   C sera el resultat dajuntar les CNF creades
+%codifica(N,K,Arestes,Inici,C):-
+%   crear la llista de llistes de variables pels colors de cada node
+%   crear la CNF que fa que cada node tingui un color
+%   crear la CNF que força els colors dels nodes segons Inici
+%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
+%   C sera el resultat dajuntar les CNF creades
 
     
                                  
@@ -81,12 +88,12 @@ codifica(N,K,Arestes,Inici,C):-
 % Donat el nombre de nodes, el nombre de colors, les Arestes A, i les inicialitzacions,
 % -> es mostra la solucio per pantalla si en te o es diu que no en te.
 
-resol(N,K,A, I):-
-   codifica(...),
-   write('SAT Solving ..................................'), nl,
-   crida a SAT
-   write('Graph (color number per node in order: '), nl,
-   mostrar el resultat
+%resol(N,K,A, I):-
+%   codifica(...),
+%   write('SAT Solving ..................................'), nl,
+%   crida a SAT
+%   write('Graph (color number per node in order: '), nl,
+%   mostrar el resultat
 
 
 
