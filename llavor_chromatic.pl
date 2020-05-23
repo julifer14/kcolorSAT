@@ -9,12 +9,15 @@ sat([],I,I):-     write('SAT!!'),nl,!.
 sat(CNF,I,M):-
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
-
+  % write(Lit),
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
-
+   %write(CNFS),
+   append([Lit],I,IntAct),
+  % write(IntAct),
+   %write(CNFS),
    % crida recursiva amb la CNF i la interpretacio actualitzada
-   sat(... , ... ,M).
+   sat(CNFS , IntAct ,M).
 
 
 %%%%%%%%%%%%%%%%%%
@@ -23,9 +26,13 @@ sat(CNF,I,M):-
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
 %  - un qualsevol o el seu negat. (De l'ultima clausula)
-tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, write('Unitari\n'), Lit = X.
-tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, write('Intent\n'), tria(Xs,Lit),!.
-tria([X|Xs],Lit) :- extreure(X,Lit).
+tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
+tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
+tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
+
+
+%           CAL QUE TALLI?
+
 
 %extreure(F,Lit)
 %Extreu un literal d'una llista.
@@ -39,15 +46,21 @@ extreure([X|Xs],L) :- L=X.
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
-%Elimina Lit negatiu.
-simplif(_,[],[]).
-%simplif(Lit,[[Y|Ys]|Xs], Fs) :- member(Lit,Y),  LitNeg is (-Lit) , append([Y],Ys,Original) , delete(Original,LitNeg,ElimU), simplif(Lit, Xs, Retorn), append([],ElimU,Pas1), write(Pas1).%,append(Pas1, Retorn, Fs).
-%simplif(Lit,[_|Xs],Fs) :- simplif(Lit, Xs, Fs).
+simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ member([],Fs).
 
 
+
+%eliminaPositiu(Lit, F, FS)
+%Donat un literal i una CNF, elimina la clausula que conté el literal 
 eliminaPositiu(_,[],[]).
 eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
 eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs).
+
+%eliminaNegatiu(Lit, F, Fs)
+%Donat un literal i una CNF, elimana el literal de signe contrari a Lit.  
+eliminaNegatiu(_,[],[]).
+eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs).
+eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs).
 
 
 
