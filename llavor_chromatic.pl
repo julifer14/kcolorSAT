@@ -39,6 +39,17 @@ extreure([X|Xs],L) :- L=X.
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
+%Elimina Lit negatiu.
+simplif(_,[],[]).
+%simplif(Lit,[[Y|Ys]|Xs], Fs) :- member(Lit,Y),  LitNeg is (-Lit) , append([Y],Ys,Original) , delete(Original,LitNeg,ElimU), simplif(Lit, Xs, Retorn), append([],ElimU,Pas1), write(Pas1).%,append(Pas1, Retorn, Fs).
+%simplif(Lit,[_|Xs],Fs) :- simplif(Lit, Xs, Fs).
+
+
+eliminaPositiu(_,[],[]).
+eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
+eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs).
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
