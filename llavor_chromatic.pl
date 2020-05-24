@@ -9,13 +9,12 @@ sat([],I,I):-     write('SAT!!'),nl,!.
 sat(CNF,I,M):-
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
-  % write(Lit),
+   %write(Lit),write('\n'),
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
-   %write(CNFS),
-   append([Lit],I,IntAct),
-  % write(IntAct),
-   %write(CNFS),
+   %write(CNFS),write('\n'),
+   append(I,[Lit],IntAct),
+   %write(IntAct),write('\n'),
    % crida recursiva amb la CNF i la interpretacio actualitzada
    sat(CNFS , IntAct ,M).
 
@@ -31,7 +30,6 @@ tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausul
 tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 
 
-%           CAL QUE TALLI?
 
 
 %extreure(F,Lit)
@@ -46,7 +44,7 @@ extreure([X|Xs],L) :- L=X.
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
-simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ member([],Fs).
+simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ member([],Fs),!.
 
 
 
@@ -59,7 +57,7 @@ eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Reto
 %eliminaNegatiu(Lit, F, Fs)
 %Donat un literal i una CNF, elimana el literal de signe contrari a Lit.  
 eliminaNegatiu(_,[],[]).
-eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs).
+eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs),!.
 eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs).
 
 
