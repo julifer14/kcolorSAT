@@ -4,17 +4,19 @@
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
-%JULIAN
-sat([],I,I):-     write('SAT!!'),nl,!.
+
+sat([],I,I):-     write('SAT!!'),nl,!. 
 sat(CNF,I,M):-
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
-
+   %write(Lit),write('\n'),
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
-
+   %write(CNFS),write('\n'),
+   append(I,[Lit],IntAct),
+   %write(IntAct),write('\n'),
    % crida recursiva amb la CNF i la interpretacio actualitzada
-   sat(... , ... ,M).
+   sat(CNFS , IntAct ,M).
 
 
 %%%%%%%%%%%%%%%%%%
@@ -22,8 +24,18 @@ sat(CNF,I,M):-
 % Donat una CNF,
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
-%  - un qualsevol o el seu negat.
-% ...
+%  - un qualsevol o el seu negat. (De l'ultima clausula)
+tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
+tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
+tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
+
+
+
+
+%extreure(F,Lit)
+%Extreu un literal d'una llista.
+extreure([],_) :- write('No es pot treure del buit!'),n1,!.
+extreure([X|Xs],L) :- L=X.
 
 %%%%%%%%%%%%%%%%%%%%%
 % simlipf(Lit, F, FS)
@@ -32,6 +44,23 @@ sat(CNF,I,M):-
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
+simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ member([],Fs),!.
+
+
+
+%eliminaPositiu(Lit, F, FS)
+%Donat un literal i una CNF, elimina la clausula que conté el literal 
+eliminaPositiu(_,[],[]).
+eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
+eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs).
+
+%eliminaNegatiu(Lit, F, Fs)
+%Donat un literal i una CNF, elimana el literal de signe contrari a Lit.  
+eliminaNegatiu(_,[],[]).
+eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs),!.
+eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs).
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,23 +72,28 @@ sat(CNF,I,M):-
 
 
 %%%%%%%%%%%%%%%%%%%
-%AITOR
 % unCert(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ... pots crear i utilitzar els auxiliars comaminimUn i nomesdUn
+unCert([],_).
+unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % comaminimUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
+comaminimUn([],_).
+comaminimUn([X|Xs],CNF) :- member(CNF,X), X =:= true,! , comaminimUn(Xs,CNF)
 
 %%%%%%%%%%%%%%%%%%%
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
+nomesdUn([],_).
+nomesdUn([X|Xs],CNF) :- member(CNF,X), member(CNF,Y), X =/= Y, X =:= true, Y =:= true,! nomesdUn(Xs,CNF)
 
 %%%%%%%%%%%%%%%%%%%
 % els nodes del graph son nombres consecutius d'1 a N.
@@ -67,12 +101,12 @@ sat(CNF,I,M):-
 % Arestes es la llista d'arestes del graph com a parelles de nodes
 % Inici es la llista de parelles (node,num_color) que s'han de forçar
 % C sera la CNF que codifica graph coloring problem pel graph donat
-codifica(N,K,Arestes,Inici,C):-
-   crear la llista de llistes de variables pels colors de cada node
-   crear la CNF que fa que cada node tingui un color
-   crear la CNF que força els colors dels nodes segons Inici
-   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
-   C sera el resultat dajuntar les CNF creades
+%codifica(N,K,Arestes,Inici,C):-
+%   crear la llista de llistes de variables pels colors de cada node
+%   crear la CNF que fa que cada node tingui un color
+%   crear la CNF que força els colors dels nodes segons Inici
+%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
+%   C sera el resultat dajuntar les CNF creades
 
     
                                  
@@ -81,12 +115,12 @@ codifica(N,K,Arestes,Inici,C):-
 % Donat el nombre de nodes, el nombre de colors, les Arestes A, i les inicialitzacions,
 % -> es mostra la solucio per pantalla si en te o es diu que no en te.
 
-resol(N,K,A, I):-
-   codifica(...),
-   write('SAT Solving ..................................'), nl,
-   crida a SAT
-   write('Graph (color number per node in order: '), nl,
-   mostrar el resultat
+%resol(N,K,A, I):-
+%   codifica(...),
+%   write('SAT Solving ..................................'), nl,
+%   crida a SAT
+%   write('Graph (color number per node in order: '), nl,
+%   mostrar el resultat
 
 
 
@@ -138,31 +172,4 @@ graf3(25,
       (20,2),(21,22),(21,5),(21,1),(22,23),(22,24),(22,25),(22,14),(22,12),(22,10),(22,7),
       (22,2),(23,24),(23,25),(23,22),(23,21),(23,19),(23,18),(23,17),(23,15),(23,13),(23,11),
       (23,8),(23,3),(24,25),(24,23),(24,22),(25,24),(25,23),(25,13)]).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
