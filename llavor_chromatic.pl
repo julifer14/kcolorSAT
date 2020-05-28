@@ -116,6 +116,7 @@ eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], R
 actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
 
 %inicialitza(+LLV, +Ini,CNF) 
+%PRE: Cap node té color. Tots Negatius.
 % Dades prefixades. Donada una llista de llista de variables XIJ i un allista de perelles (nombre de cada node, color) 
 %   -> Genera CNF que fa que cad anode inicializat tingui el color que es demana.
 inicialitza([],_,[]).
@@ -130,6 +131,8 @@ inicialitza(V,[(Node,Color)|Xs],C) :-
 %Donat una llista, un index i un element, es canvia el valor del index 
 replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
+
+%ferMutexes(+LLV, +Arestes, CNF).
                                  
 %%%%%%%%%%%%%%%%%%%%
 % resolGraf(N,A,K,Inputs)
