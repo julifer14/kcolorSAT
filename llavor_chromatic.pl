@@ -77,6 +77,7 @@ eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], R
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ... pots crear i utilitzar els auxiliars comaminimUn i nomesdUn
 unCert([],_).
+unCert([X],[X]) :- X>0.
 unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 
 %%%%%%%%%%%%%%%%%%%
@@ -85,16 +86,15 @@ unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
 comaminimUn([],_).
-comaminimUn([X|Xs],CNF) :- member(CNF,X), X =:= true,! , comaminimUn(Xs,CNF)
-
+comaminimUn([X|Xs],[X|Xs]) :-  X > 0. %comaminimUn(Xs,CNF).
+comaminimUn([X|Xs],CNF) :- comaminimUn(Xs,CNF).
 %%%%%%%%%%%%%%%%%%%
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
 nomesdUn([],_).
-nomesdUn([X|Xs],CNF) :- member(CNF,X), member(CNF,Y), X =/= Y, X =:= true, Y =:= true,! nomesdUn(Xs,CNF)
-
+nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
 %%%%%%%%%%%%%%%%%%%
 % els nodes del graph son nombres consecutius d'1 a N.
 % K es el nombre de colors a fer servir.
@@ -103,9 +103,12 @@ nomesdUn([X|Xs],CNF) :- member(CNF,X), member(CNF,Y), X =/= Y, X =:= true, Y =:=
 % C sera la CNF que codifica graph coloring problem pel graph donat
 %codifica(N,K,Arestes,Inici,C):-
 %   crear la llista de llistes de variables pels colors de cada node
-%   crear la CNF que fa que cada node tingui un color
-%   crear la CNF que força els colors dels nodes segons Inici
-%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
+%   [1,2,3] A
+%   [4,5,6] B 
+%   [7,8,9] C 
+%   crear la CNF que fa que cada node tingui un color [unCert]
+%   crear la CNF que força els colors dels nodes segons Inici [inicialitza]
+%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
 
     
