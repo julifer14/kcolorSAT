@@ -4,13 +4,13 @@
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
-%JULIAN
 sat([],I,I):-     write('SAT!!'),nl,!. 
 sat(CNF,I,M):-
    %write('CNF: '),write(CNF),write('\n'),
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
    %write('LITERAL: '),write(Lit),write('\n'),
+
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
    %write(CNFS),write('\n'),
@@ -28,7 +28,7 @@ sat(CNF,I,M):-
 %  - un qualsevol o el seu negat. (De l'ultima clausula)
 tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
 tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
-tria([X|Xs],Lit) :- !,extreure(X,Lit). %agafa un literal qualsevol
+tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 
 
 
@@ -73,23 +73,28 @@ eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], R
 
 
 %%%%%%%%%%%%%%%%%%%
-%AITOR
 % unCert(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ... pots crear i utilitzar els auxiliars comaminimUn i nomesdUn
+unCert([],_).
+unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 
 %%%%%%%%%%%%%%%%%%%
 % comaminimUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
+comaminimUn([],_).
+comaminimUn([X|Xs],CNF) :- member(CNF,X), X =:= true,! , comaminimUn(Xs,CNF)
 
 %%%%%%%%%%%%%%%%%%%
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
+nomesdUn([],_).
+nomesdUn([X|Xs],CNF) :- member(CNF,X), member(CNF,Y), X =/= Y, X =:= true, Y =:= true,! nomesdUn(Xs,CNF)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,6 +138,7 @@ replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
 
 %ferMutexes(+LLV, +Arestes, CNF).
+
                                  
 %%%%%%%%%%%%%%%%%%%%
 % resolGraf(N,A,K,Inputs)
@@ -196,31 +202,4 @@ graf3(25,
       (20,2),(21,22),(21,5),(21,1),(22,23),(22,24),(22,25),(22,14),(22,12),(22,10),(22,7),
       (22,2),(23,24),(23,25),(23,22),(23,21),(23,19),(23,18),(23,17),(23,15),(23,13),(23,11),
       (23,8),(23,3),(24,25),(24,23),(24,22),(25,24),(25,23),(25,13)]).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
