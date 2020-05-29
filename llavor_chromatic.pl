@@ -108,12 +108,12 @@ eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], R
 
 %codifica(N,K,Arestes,Inici,C):-
 %   crear la llista de llistes de variables pels colors de cada node
-%   crear la CNF que fa que cada node tingui un color 
+%   crear la CNF que fa que cada node tingui un color  [unCert]
 %   crear la CNF que força els colors dels nodes segons Inici [Inicialitza]
 %   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
 
-actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
+actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk>0, ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
 
 %inicialitza(+LLV, +Ini,CNF) 
 %PRE: Cap node té color. Tots Negatius.
