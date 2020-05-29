@@ -4,12 +4,13 @@
 % sat(F,I,M)
 % si F es satisfactible, M sera el model de F afegit a la interpretacio I (a la primera crida I sera buida).
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
-
 sat([],I,I):-     write('SAT!!'),nl,!. 
 sat(CNF,I,M):-
+   %write('CNF: '),write(CNF),write('\n'),
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
-   %write(Lit),write('\n'),
+   %write('LITERAL: '),write(Lit),write('\n'),
+
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
    %write(CNFS),write('\n'),
@@ -52,13 +53,13 @@ simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ 
 %Donat un literal i una CNF, elimina la clausula que conté el literal 
 eliminaPositiu(_,[],[]).
 eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
-eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs).
+eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs),!.
 
 %eliminaNegatiu(Lit, F, Fs)
 %Donat un literal i una CNF, elimana el literal de signe contrari a Lit.  
 eliminaNegatiu(_,[],[]).
 eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs),!.
-eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs).
+eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs),!.
 
 
 
@@ -95,20 +96,49 @@ comaminimUn([X|Xs],CNF) :- member(CNF,X), X =:= true,! , comaminimUn(Xs,CNF)
 nomesdUn([],_).
 nomesdUn([X|Xs],CNF) :- member(CNF,X), member(CNF,Y), X =/= Y, X =:= true, Y =:= true,! nomesdUn(Xs,CNF)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%%%%%%%%%%%%%%%%%%
 % els nodes del graph son nombres consecutius d'1 a N.
 % K es el nombre de colors a fer servir.
 % Arestes es la llista d'arestes del graph com a parelles de nodes
 % Inici es la llista de parelles (node,num_color) que s'han de forçar
 % C sera la CNF que codifica graph coloring problem pel graph donat
+
 %codifica(N,K,Arestes,Inici,C):-
 %   crear la llista de llistes de variables pels colors de cada node
-%   crear la CNF que fa que cada node tingui un color
-%   crear la CNF que força els colors dels nodes segons Inici
-%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents
+%   crear la CNF que fa que cada node tingui un color  [unCert]
+%   crear la CNF que força els colors dels nodes segons Inici [Inicialitza]
+%   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
 
-    
+actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk>0, ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
+
+%inicialitza(+LLV, +Ini,CNF) 
+%PRE: Cap node té color. Tots Negatius.
+% Dades prefixades. Donada una llista de llista de variables XIJ i un allista de perelles (nombre de cada node, color) 
+%   -> Genera CNF que fa que cad anode inicializat tingui el color que es demana.
+inicialitza([],_,[]).
+inicialitza(V,[],V).
+inicialitza(V,[(Node,Color)|Xs],C) :- 
+   NodeOK is Node-1,
+   nth0(NodeOK,V,NodeACanviar),
+   actualitzarNode(NodeACanviar,Color,N),
+   replace(V,NodeOK,N,V2),
+   inicialitza(V2,Xs,C),!. 
+
+%Donat una llista, un index i un element, es canvia el valor del index 
+replace([_|T], 0, X, [X|T]).
+replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
+
+%ferMutexes(+LLV, +Arestes, CNF).
+
                                  
 %%%%%%%%%%%%%%%%%%%%
 % resolGraf(N,A,K,Inputs)
