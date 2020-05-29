@@ -113,7 +113,7 @@ nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
 %   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
 
-actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk>0, ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
+actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
 
 %inicialitza(+LLV, +Ini,CNF) 
 %PRE: Cap node té color. Tots Negatius.
