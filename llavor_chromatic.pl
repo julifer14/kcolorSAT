@@ -26,9 +26,9 @@ sat(CNF,I,M):-
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
 %  - un qualsevol o el seu negat. (De l'ultima clausula)
-tria([X|Xs],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
+tria([X|_],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
 tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
-tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
+tria([X|_],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 
 
 
@@ -36,7 +36,7 @@ tria([X|Xs],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 %extreure(F,Lit)
 %Extreu un literal d'una llista.
 extreure([],_) :- write('No es pot treure del buit!'),n1,!.
-extreure([X|Xs],L) :- L=X.
+extreure([X|_],L) :- L=X.
 
 %%%%%%%%%%%%%%%%%%%%%
 % simlipf(Lit, F, FS)
@@ -86,9 +86,9 @@ unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
-comaminimUn([],_).
-comaminimUn([X|Xs],[X|Xs]) :-  X > 0. %comaminimUn(Xs,CNF).
-comaminimUn([X|Xs],CNF) :- comaminimUn(Xs,CNF).
+%comaminimUn([],_).
+%comaminimUn([X|Xs],[X|Xs]) :-  X > 0. %comaminimUn(Xs,CNF).
+%comaminimUn([X|Xs],CNF) :- comaminimUn(Xs,CNF).
 %%%%%%%%%%%%%%%%%%%
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
@@ -115,16 +115,28 @@ nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
 
 actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N).
 
+posarEnNegatiu([],[]).
+posarEnNegatiu([X|Xs],[Y|Ys]) :- iposarEnNegatiu(X,Y), posarEnNegatiu(Xs, Ys).
+
+
+
+iposarEnNegatiu([],[]).
+iposarEnNegatiu([X|Xs],[XOk|N]) :- X>0, XOk is -X, iposarEnNegatiu(Xs,N),!.
+iposarEnNegatiu([X|Xs],[X|N]) :- X<0, iposarEnNegatiu(Xs,N).
+
 %inicialitza(+LLV, +Ini,CNF) 
+inicialitza(LLV, Ini,CNF) :- posarEnNegatiu(LLV,L),inicialitzaBis(L, Ini,CNF).
+
+%inicialitzaBis(+LLV, +Ini,CNF) 
 % Dades prefixades. Donada una llista de llista de variables XIJ i un allista de perelles (nombre de cada node, color) 
 %   -> Genera CNF que fa que cad anode inicializat tingui el color que es demana.
-%inicialitza(V,[],[]) :- write('aqui 1\n'). %No hi ha restriccions
-inicialitza(_,[],[]).
-inicialitza(V, [(Node,Color)|Xs], [NouNode|R]) :-
+%inicialitzaBis(V,[],[]) :- write('aqui 1\n'). %No hi ha restriccions
+inicialitzaBis(_,[],[]).
+inicialitzaBis(V, [(Node,Color)|Xs], [NouNode|R]) :-
    NodeOk is Node-1, 
    nth0(NodeOk,V,NodeACanviar),
    actualitzarNode(NodeACanviar,Color,NouNode),
-   inicialitza(V, Xs, R),!.
+   inicialitzaBis(V, Xs, R),!.
 
 
 %Donat una llista, un index i un element, es canvia el valor del index 
