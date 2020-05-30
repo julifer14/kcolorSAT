@@ -113,20 +113,19 @@ nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
 %   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
 
-actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N),!.
+actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N).
 
 %inicialitza(+LLV, +Ini,CNF) 
-%PRE: Cap node té color. Tots Negatius.
 % Dades prefixades. Donada una llista de llista de variables XIJ i un allista de perelles (nombre de cada node, color) 
 %   -> Genera CNF que fa que cad anode inicializat tingui el color que es demana.
-inicialitza([],_,[]).
-inicialitza(V,[],V).
-inicialitza(V,[(Node,Color)|Xs],C) :- 
-   NodeOK is Node-1,
-   nth0(NodeOK,V,NodeACanviar),
-   actualitzarNode(NodeACanviar,Color,N),
-   replace(V,NodeOK,N,V2),
-   inicialitza(V2,Xs,C),!. 
+%inicialitza(V,[],[]) :- write('aqui 1\n'). %No hi ha restriccions
+inicialitza(_,[],[]).
+inicialitza(V, [(Node,Color)|Xs], [NouNode|R]) :-
+   NodeOk is Node-1, 
+   nth0(NodeOk,V,NodeACanviar),
+   actualitzarNode(NodeACanviar,Color,NouNode),
+   inicialitza(V, Xs, R),!.
+
 
 %Donat una llista, un index i un element, es canvia el valor del index 
 replace([_|T], 0, X, [X|T]).
