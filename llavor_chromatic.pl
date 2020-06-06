@@ -6,16 +6,11 @@
 % Assumim invariant que no hi ha literals repetits a les clausules ni la clausula buida inicialment.
 sat([],I,I):-     write('SAT!!'),nl,!. 
 sat(CNF,I,M):-
-   %write('CNF: '),write(CNF),write('\n'),
    % Ha de triar un literal d’una clausula unitaria, si no n’hi ha cap, llavors un literal pendent qualsevol.
    tria(CNF,Lit),
-   %write('LITERAL: '),write(Lit),write('\n'),
-
    % Simplifica la CNF amb el Lit triat (compte pq pot fallar, es a dir si troba la clausula buida fallara i fara backtraking).
    simplif(Lit,CNF,CNFS),
-   %write(CNFS),write('\n'),
    append(I,[Lit],IntAct),
-   %write(IntAct),write('\n'),
    % crida recursiva amb la CNF i la interpretacio actualitzada
    sat(CNFS , IntAct ,M).
 
@@ -26,7 +21,7 @@ sat(CNF,I,M):-
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
 %  - un qualsevol o el seu negat. (De l'ultima clausula)
-tria([X|_],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit). % Clausula unitaria
+tria([X|_],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit),!. % Clausula unitaria
 tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
 tria([X|_],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 
@@ -36,7 +31,7 @@ tria([X|_],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
 %extreure(F,Lit)
 %Extreu un literal d'una llista.
 extreure([],_) :- write('No es pot treure del buit!'),n1,!.
-extreure([X|_],L) :- L=X.
+extreure([X|_],X).
 
 %%%%%%%%%%%%%%%%%%%%%
 % simlipf(Lit, F, FS)
@@ -45,13 +40,13 @@ extreure([X|_],L) :- L=X.
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
-simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss), eliminaNegatiu(Lit,Fss,Fs), \+ member([],Fs),!.
+simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss),!, eliminaNegatiu(Lit,Fss,Fs),!, \+ member([],Fs),!.
 
 
 
 %eliminaPositiu(Lit, F, FS)
 %Donat un literal i una CNF, elimina la clausula que conté el literal 
-eliminaPositiu(_,[],[]).
+eliminaPositiu(_,[],[]) :- !.
 eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
 eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs),!.
 
@@ -86,16 +81,51 @@ unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
-%comaminimUn([],_).
+comaminimUn([],[]).
 %comaminimUn([X|Xs],[X|Xs]) :-  X > 0. %comaminimUn(Xs,CNF).
 %comaminimUn([X|Xs],CNF) :- comaminimUn(Xs,CNF).
 %%%%%%%%%%%%%%%%%%%
+
+
+
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
-nomesdUn([],_).
-nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
+nomesdUn([],[]).
+nomesdUn([X],[[X]]).
+%nomesdUn(L,CNF) :- iposarEnNegatiu(L,LNEG), XNEG is -XN,nomesdUn(Xs,) . %inomesdUn(NL,CNF). %write(X), write('\n'), nomesdUn(Xs,CNF).
+
+
+
+%generarLlista(I, F, L).
+%L és la llista de I fins F 
+generaLLista(I, I, [I]).
+generaLLista(I, F, LL):-  I < F,  K is I+1,
+                          generaLLista(K, F, Cua),
+                          append([I], Cua, LL),!. 
+
+%treuN(N,L,X,Xs).
+%Donada la llista L, extreu N elements de L (X) i la cua es Xs.
+treuN(0, L, [], L).
+treuN(N, L, X, Xs):- K is N-1, K >= 0, 
+                     append([A], B, L),
+                     treuN(K, B, X2, Xs),
+                     append([A], X2, X).
+
+%separar(K,L,Res)
+%Donada una llista L de variables booleanes, Res serà la llista de llistes L con cada subllista té K elements
+%Per exemple la llista [1,2,3,4] serà [[1,2],[3,4]] amb K=2
+separar(_, [], []).
+separar(K, L, Res) :- treuN(K, L, E, CUA),
+                      separar(K, CUA, NE),
+                      append([E], NE, Res).
+
+%generarLlistaLlistes(N,K,L).
+% N és el nombre de nodes, K és k-color i L és la llista de llistes que codifica el problema.
+%Genera la llista de llistes de variables Booleanes. Per codificar de quin color es codifica cada node.
+generarLlistaLlistes(N,K,L) :-generaLLista(1,N,Llista), separar(K,Llista,L),!.
+
 %%%%%%%%%%%%%%%%%%%
 % els nodes del graph son nombres consecutius d'1 a N.
 % K es el nombre de colors a fer servir.
@@ -105,13 +135,19 @@ nomesdUn([X|Xs],CNF) :- X =\= Y, X>0, Y>0,!, nomesdUn(Xs,CNF).
 
 %codifica(N,K,Arestes,Inici,C):-
 %   crear la llista de llistes de variables pels colors de cada node
-%   [1,2,3] A
-%   [4,5,6] B 
-%   [7,8,9] C 
 %   crear la CNF que fa que cada node tingui un color [unCert]
 %   crear la CNF que força els colors dels nodes segons Inici [inicialitza]
 %   crear la CNF que fa que dos nodes que es toquen tinguin colors diferents [ferMutexes]
 %   C sera el resultat dajuntar les CNF creades
+
+codifica(N,K,Arestes,Inici,C) :- generarLlistaLlistes(N,K,LLV),
+                                 %unCert
+                                 %write(LLV),
+                                 inicialitza(LLV,Inici,CNFINI),
+                                 ferMutexes(LLV,Arestes,CNFMUT),
+                                 %write(CNFINI),
+                                 append(CNFINI,CNFMUT,C).
+
 
 actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N).
 
@@ -119,12 +155,14 @@ posarEnNegatiu([],[]).
 posarEnNegatiu([X|Xs],[Y|Ys]) :- iposarEnNegatiu(X,Y), posarEnNegatiu(Xs, Ys).
 
 
-
 iposarEnNegatiu([],[]).
 iposarEnNegatiu([X|Xs],[XOk|N]) :- X>0, XOk is -X, iposarEnNegatiu(Xs,N),!.
 iposarEnNegatiu([X|Xs],[X|N]) :- X<0, iposarEnNegatiu(Xs,N).
 
+%Donada una llista de llistes de variables i una llista de parelles (nombre de node, color)
+%  -> Genera CNF que faci que cada node inicialitzat tingui el color que es demana 
 %inicialitza(+LLV, +Ini,CNF) 
+inicialitza(_,[],[]).
 inicialitza(LLV, Ini,CNF) :- posarEnNegatiu(LLV,L),inicialitzaBis(L, Ini,CNF).
 
 %inicialitzaBis(+LLV, +Ini,CNF) 
@@ -143,9 +181,17 @@ inicialitzaBis(V, [(Node,Color)|Xs], [NouNode|R]) :-
 replace([_|T], 0, X, [X|T]).
 replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
 
-%ferMutexes(+LLV, +Arestes, CNF).
+% ferMutexes(+LLV, +Arestes, CNF).
+% Nodes veins tinguin colors diferents.
+% Donada una llista de llistes de variables i una llista d'arestes (les arestes seran parelles de nombres de nodes). 
+% Generi CNF que eviti que dos veins tinguin el mateix color assignat
+%IDEA: Per cada Element del Node, si es positiu indicar quins han de ser negatius forsosament. 
+ferMutexes(_,_,[]).
+%ferMutexes(V,[(Node1,Node2)|Xs], [[Node1,Resultat]|CNF]) :- midaSubLlista(V,K), Resultat is (Node2*K), write(Resultat), write('\n'),ferMutexes(V,Xs,CNF).%   ferMutexes(Xs,A,CNF).
 
-                                 
+%midaSubLlista([X|_], S) :- length(X,S).
+
+                               
 %%%%%%%%%%%%%%%%%%%%
 % resolGraf(N,A,K,Inputs)
 % Donat el nombre de nodes, el nombre de colors, les Arestes A, i les inicialitzacions,
@@ -158,6 +204,14 @@ replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
 %   write('Graph (color number per node in order: '), nl,
 %   mostrar el resultat
 
+resol(N,K,A,I) :- codifica(N,K,A,I,CNF),
+                  write(CNF),nl,
+                  write('SAT Solving ..................................'), nl,
+                  sat(CNF,I,M),
+                  write('Graph (color number per node in order: '), nl,
+                  write(M).
+                  %mostrarResultatsSAT(M).
+                  %mostrar el resultat
 
 
 %%%%%%%%%%%%%%%%%%%%
@@ -165,7 +219,16 @@ replace([H|T], I, X, [H|R]) :- I > 0, I1 is I-1, replace(T, I1, X, R),!.
 % Donat el nombre de nodes,  les Arestes A, i les inicialitzacions,
 % -> es mostra la solucio per pantalla si en te o es diu que no en te.
 % Pista, us pot ser util fer una inmersio amb el nombre de colors permesos.
-   
+
+chromatic(N,A,Inputs) :- ichromatic(0,N,A,Inputs).
+
+ichromatic(I,N,A,Inputs) :- I<N, K is I+1,
+                           resol(N,K,A,I),write(K),nl,
+                           ichromatic(K,N,A,Inputs).
+
+ichromatic(I,N,A,Inputs) :- I<N, K is I+1,
+                           \+ resol(N,K,A,I),write(K), write(' Error!'),nl,
+                           ichromatic(K,N,A,Inputs).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % com a query podeu cridar:
