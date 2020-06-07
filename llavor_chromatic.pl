@@ -73,7 +73,6 @@ eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], R
 % -> el segon parametre sera la CNF que codifica que exactament una sigui certa.
 % ... pots crear i utilitzar els auxiliars comaminimUn i nomesdUn
 unCert([],_).
-unCert([X],[X]) :- X>0.
 unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 
 %%%%%%%%%%%%%%%%%%%
@@ -81,21 +80,25 @@ unCert(L,CNF) :- comaminimUn(L,CNF), nomesdUn(L,CNF).
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a minim una sigui certa.
 % ...
-comaminimUn([],[]).
-%comaminimUn([X|Xs],[X|Xs]) :-  X > 0. %comaminimUn(Xs,CNF).
-%comaminimUn([X|Xs],CNF) :- comaminimUn(Xs,CNF).
+% p or q
+comaminimUn([],_).
+comaminimUn([X|Xs],CNF) :- X>0, !.
+comaminimUn([X|Xs],CNF) :- X<0, comaminimUn(Xs,CNF).
+
+
 %%%%%%%%%%%%%%%%%%%
-
-
-
 % nomesdUn(L,CNF)
 % Donat una llista de variables booleanes,
 % -> el segon parametre sera la CNF que codifica que com a molt una sigui certa.
 % ...
-nomesdUn([],[]).
-nomesdUn([X],[[X]]).
-%nomesdUn(L,CNF) :- iposarEnNegatiu(L,LNEG), XNEG is -XN,nomesdUn(Xs,) . %inomesdUn(NL,CNF). %write(X), write('\n'), nomesdUn(Xs,CNF).
+% p nand q ??
+nomesdUn([],_).
+nomesdUn(L,CNF) :- NUM is 0, iNomesdUn(L,CNF,NUM).
 
+iNomesdUn([],_,_).
+iNomesdUn([X|Xs],CNF,NUM) :- X>0, NUM=:=0, NUM2 is NUM+1, X2 is -X, append(CNF, [X2], CNF2), iNomesdUn(Xs,CNF2,NUM2).
+iNomesdUn([X|Xs],CNF,NUM) :- X>0, NUM>0, append(CNF, [X], CNF2), iNomesdUn(Xs,CNF2,NUM).
+iNomesdUn([X|Xs],CNF,NUM) :- X<0, append(CNF, [X], CNF2), iNomesdUn(Xs,CNF2,NUM).
 
 
 %generarLlista(I, F, L).
@@ -271,4 +274,3 @@ graf3(25,
       (20,2),(21,22),(21,5),(21,1),(22,23),(22,24),(22,25),(22,14),(22,12),(22,10),(22,7),
       (22,2),(23,24),(23,25),(23,22),(23,21),(23,19),(23,18),(23,17),(23,15),(23,13),(23,11),
       (23,8),(23,3),(24,25),(24,23),(24,22),(25,24),(25,23),(25,13)]).
-
