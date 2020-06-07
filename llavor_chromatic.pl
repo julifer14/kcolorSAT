@@ -21,9 +21,14 @@ sat(CNF,I,M):-
 % -> el segon parametre sera un literal de CNF
 %  - si hi ha una clausula unitaria sera aquest literal, sino
 %  - un qualsevol o el seu negat. (De l'ultima clausula)
-tria([X|_],Lit) :- length(X,Mida), Mida =:= 1, extreure(X,Lit),!. % Clausula unitaria
-tria([X|Xs],Lit) :- length(X,Mida), Mida =\= 1, tria(Xs,Lit). % no hi ha clausula unitaria
-tria([X|_],Lit) :- extreure(X,Lit). %agafa un literal qualsevol
+tria([X|_],Lit) :-   length(X,Mida), 
+                     Mida =:= 1, extreure(X,Lit),!. % Clausula unitaria
+
+tria([X|Xs],Lit) :-  length(X,Mida), 
+                     Mida =\= 1, 
+                     tria(Xs,Lit). % no hi ha clausula unitaria
+
+tria([X|_],Lit) :-   extreure(X,Lit). %agafa un literal qualsevol
 
 
 
@@ -40,21 +45,33 @@ extreure([X|_],X).
 %  - sense les clausules que tenen lit
 %  - treient -Lit de les clausules on hi es, si apareix la clausula buida fallara.
 % ...
-simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss),!, eliminaNegatiu(Lit,Fss,Fs),!, \+ member([],Fs),!.
+simplif(Lit,F,Fs) :- eliminaPositiu(Lit, F,Fss),!, 
+                     eliminaNegatiu(Lit,Fss,Fs),!, 
+                     \+ member([],Fs),!.
 
 
 
 %eliminaPositiu(Lit, F, FS)
 %Donat un literal i una CNF, elimina la clausula que conté el literal 
 eliminaPositiu(_,[],[]) :- !.
-eliminaPositiu(Lit, [X|Xs],Fs) :- member(Lit,X), eliminaPositiu(Lit, Xs, Fs),!.
-eliminaPositiu(Lit, [X|Xs],Fs) :- eliminaPositiu(Lit,Xs,Retorn), append([X],Retorn,Fs),!.
+
+eliminaPositiu(Lit, [X|Xs],Fs) :-   member(Lit,X), 
+                                    eliminaPositiu(Lit, Xs, Fs),!.
+
+eliminaPositiu(Lit, [X|Xs],Fs) :-   eliminaPositiu(Lit,Xs,Retorn), 
+                                    append([X],Retorn,Fs),!.
 
 %eliminaNegatiu(Lit, F, Fs)
 %Donat un literal i una CNF, elimana el literal de signe contrari a Lit.  
 eliminaNegatiu(_,[],[]).
-eliminaNegatiu(Lit, [X|Xs], Fs) :- LitNeg is (-Lit), member(LitNeg,X), delete(X,LitNeg,ClauSenseLit), eliminaNegatiu(Lit, Xs, Retorn), append([ClauSenseLit],Retorn,Fs),!.
-eliminaNegatiu(Lit, [X|Xs],Fs) :- eliminaNegatiu(Lit, Xs, Retorn), append([X], Retorn, Fs),!.
+eliminaNegatiu(Lit, [X|Xs], Fs) :-  LitNeg is (-Lit), 
+                                    member(LitNeg,X), 
+                                    delete(X,LitNeg,ClauSenseLit), 
+                                    eliminaNegatiu(Lit, Xs, Retorn), 
+                                    append([ClauSenseLit],Retorn,Fs),!.
+
+eliminaNegatiu(Lit, [X|Xs],Fs) :-   eliminaNegatiu(Lit, Xs, Retorn),
+                                    append([X], Retorn, Fs),!.
 
 
 
@@ -127,7 +144,8 @@ separar(K, L, Res) :- treuN(K, L, E, CUA),
 %generarLlistaLlistes(N,K,L).
 % N és el nombre de nodes, K és k-color i L és la llista de llistes que codifica el problema.
 %Genera la llista de llistes de variables Booleanes. Per codificar de quin color es codifica cada node.
-generarLlistaLlistes(N,K,L) :-generaLLista(1,N,Llista), separar(K,Llista,L),!.
+generarLlistaLlistes(N,K,L) :-   generaLLista(1,N,Llista), 
+                                 separar(K,Llista,L),!.
 
 %%%%%%%%%%%%%%%%%%%
 % els nodes del graph son nombres consecutius d'1 a N.
@@ -144,40 +162,50 @@ generarLlistaLlistes(N,K,L) :-generaLLista(1,N,Llista), separar(K,Llista,L),!.
 %   C sera el resultat dajuntar les CNF creades
 
 codifica(N,K,Arestes,Inici,C) :- generarLlistaLlistes(N,K,LLV),
-                                 %unCert
-                                 %write(LLV),
+                                 %unCert(LLV,CNFUNCERT),
                                  inicialitza(LLV,Inici,CNFINI),
                                  ferMutexes(LLV,Arestes,CNFMUT),
-                                 %write(CNFINI),
-                                 append(CNFINI,CNFMUT,C).
+                                 append([],CNFINI,C1),
+                                 append(C1,CNFMUT,C).
 
 
-actualitzarNode(Node,Color,N) :- ColorOk is Color-1, nth0(ColorOk, Node, Valor), ValorOk is -Valor, replace(Node,ColorOk,ValorOk,N).
+%actualitzarNode(+Node, Color, N)
+% Donat un node [-1,-2,-3] i un color 3, N és el node amb el color actualitzat, és a dir,  N = [-1,-2,3] N indica que el node es pinta de color 3
+actualitzarNode(Node,Color,N) :- ColorOk is Color-1, 
+                                 nth0(ColorOk, Node, Valor), 
+                                 ValorOk is -Valor, 
+                                 replace(Node,ColorOk,ValorOk,N).
 
 posarEnNegatiu([],[]).
-posarEnNegatiu([X|Xs],[Y|Ys]) :- iposarEnNegatiu(X,Y), posarEnNegatiu(Xs, Ys).
+posarEnNegatiu([X|Xs],[Y|Ys]) :- iposarEnNegatiu(X,Y), 
+                                 posarEnNegatiu(Xs, Ys).
 
-
+%posarEnNegatiu(+L,LN).
+%Donada una llista de literals els posa tot en negatiu.
 iposarEnNegatiu([],[]).
-iposarEnNegatiu([X|Xs],[XOk|N]) :- X>0, XOk is -X, iposarEnNegatiu(Xs,N),!.
-iposarEnNegatiu([X|Xs],[X|N]) :- X<0, iposarEnNegatiu(Xs,N).
+iposarEnNegatiu([X|Xs],[XOk|N]) :-  X>0, 
+                                    XOk is -X, 
+                                    iposarEnNegatiu(Xs,N),!.
+
+iposarEnNegatiu([X|Xs],[X|N]) :-    X<0, 
+                                    iposarEnNegatiu(Xs,N).
 
 %Donada una llista de llistes de variables i una llista de parelles (nombre de node, color)
 %  -> Genera CNF que faci que cada node inicialitzat tingui el color que es demana 
 %inicialitza(+LLV, +Ini,CNF) 
 inicialitza(_,[],[]).
-inicialitza(LLV, Ini,CNF) :- posarEnNegatiu(LLV,L),inicialitzaBis(L, Ini,CNF).
+inicialitza(LLV, Ini,CNF) :-  posarEnNegatiu(LLV,L),
+                              inicialitzaBis(L, Ini,CNF).
 
 %inicialitzaBis(+LLV, +Ini,CNF) 
 % Dades prefixades. Donada una llista de llista de variables XIJ i un allista de perelles (nombre de cada node, color) 
 %   -> Genera CNF que fa que cad anode inicializat tingui el color que es demana.
-%inicialitzaBis(V,[],[]) :- write('aqui 1\n'). %No hi ha restriccions
 inicialitzaBis(_,[],[]).
-inicialitzaBis(V, [(Node,Color)|Xs], [NouNode|R]) :-
-   NodeOk is Node-1, 
-   nth0(NodeOk,V,NodeACanviar),
-   actualitzarNode(NodeACanviar,Color,NouNode),
-   inicialitzaBis(V, Xs, R),!.
+inicialitzaBis(V, [(Node,Color)|Xs], [NouNode|R]) :-  NodeOk is Node-1, 
+                                                      nth0(NodeOk,V,NodeACanviar),
+                                                      actualitzarNode(NodeACanviar,Color,NouNode),
+                                                      inicialitzaBis(V, Xs, R),!.
+   
 
 
 %Donat una llista, un index i un element, es canvia el valor del index 
